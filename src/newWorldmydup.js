@@ -18,7 +18,7 @@ var VSHADER_SOURCE = `
 var FSHADER_SOURCE = `
     precision mediump float;
     varying vec2 v_UV;
-    uniform vec4 u_FragColor;  // uniform
+    uniform vec4 u_FragColor;
     uniform sampler2D u_Sampler0;
     uniform sampler2D u_Sampler1;
     uniform sampler2D u_Sampler2;
@@ -42,8 +42,8 @@ var FSHADER_SOURCE = `
         else {
             gl_FragColor = vec4(1,.2,.2,1);
         }
-    }`
 
+    }`
 
 // Global Variables
 let canvas;
@@ -181,12 +181,6 @@ function connectVariablestoGLSL() {
         return;
     }
 
-    u_Sampler2 = gl.getUniformLocation(gl.program, 'u_Sampler2');
-    if (!u_Sampler0) {
-        console.log('Failed to get the storage location of u_Sampler2');
-        return;
-    }
-
     u_whichTexture = gl.getUniformLocation(gl.program, 'u_whichTexture');
     if (!u_whichTexture) {
         console.log('Failed to get the storage location of u_whichTexture');
@@ -267,7 +261,7 @@ function initTextures() {
         return false;
     }
     image.onload = function(){ sendImagetoTexture0(image);}
-    image.src = 'farm-2.jpg'
+    image.src = 'farm-2.jpg';
 
     var image2 = new Image();
     if (!image2) {
@@ -276,14 +270,6 @@ function initTextures() {
     }
     image2.onload = function(){ sendImagetoTexture1(image2);}
     image2.src = 'grass.jpg';
-
-    var image3 = new Image();
-    if (!image3) {
-        console.log('Failed to create the image object');
-        return false;
-    }
-    image3.onload = function(){ sendImagetoTexture2(image3);}
-    image3.src = 'grass.jpg';
 
     return true;
 }
@@ -316,26 +302,11 @@ function sendImagetoTexture1(image) {
     gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, image);
     gl.uniform1i(u_Sampler1, 1);
     console.log('Finished loadTexture');
-}
 
-function sendImagetoTexture2(image) {
-    var texture = gl.createTexture();
-    if (!texture) {
-        console.log('Failed to create the texture object');
-        return false;
-    }
-    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 1);
-    gl.activeTexture(gl.TEXTURE2);
-    gl.bindTexture(gl.TEXTURE_2D, texture);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, image);
-    gl.uniform1i(u_Sampler2, 2);
-    console.log('Finished loadTexture');
 }
 
 var g_startTime = performance.now()/1000.0;
 var g_seconds=performance.now()/1000.0-g_startTime;
-
 
 function tick() {
     g_seconds=performance.now()/1000.0-g_startTime;
@@ -396,17 +367,18 @@ var g_up = [0,1,0];
 var g_camera = new Camera();
 
 function keydown(ev) {
-    if (ev.keyCode == 65) {     // A
-        g_camera.left();
-    }
-    else if (ev.keyCode == 68) {    // D
+    if (ev.keyCode == 65) {     // D
         g_camera.right();
+    }
+    else if (ev.keyCode == 68) {    // A
+        g_camera.left();
     }
     else if (ev.keyCode == 83) {  // S
         g_camera.back();
     }
-    else if (ev.keyCode == 87) {  // W
-        g_camera.forward();
+
+    else if (ev.keyCode == 87) {
+        g_camera.forward();  // W
     }
     else if (ev.keyCode == 81) {    // Q
         g_camera.panLeft();
@@ -431,9 +403,9 @@ function keydown(ev) {
         g_camera.eye.elements[1] -= 0.2;
     }
 
+
     renderAllShapes();
     console.log(ev.keyCode);
-    console.log("hi friends");
 }
 
 function renderAllShapes() {
@@ -444,10 +416,7 @@ function renderAllShapes() {
     gl.uniformMatrix4fv(u_ProjectionMatrix, false, projMat.elements);
 
     var viewMat = new Matrix4();
-    viewMat.setLookAt(
-        g_camera.eye.elements[0], g_camera.eye.elements[1], g_camera.eye.elements[2],
-        g_camera.at.elements[0],  g_camera.at.elements[1],  g_camera.at.elements[2],
-        g_camera.up.elements[0],  g_camera.up.elements[1],  g_camera.up.elements[2]);
+    viewMat.setLookAt(g_eye[0], g_eye[1], g_eye[2], g_at[0], g_at[1], g_at[2], g_up[0], g_up[1], g_up[2]);
     gl.uniformMatrix4fv(u_ViewMatrix, false, viewMat.elements);
 
     var globalRotMat = new Matrix4().rotate(g_globalAngle, 0, 1, 0);
@@ -466,7 +435,7 @@ function renderAllShapes() {
     sky.textureNum = 0;
     sky.matrix.scale(50, 50, 50);
     sky.matrix.translate(-0.5, -0.5, -0.5);
-    sky.renderfast();
+    sky.render();
 
     // Floor
     var floor = new Cube();
@@ -475,9 +444,9 @@ function renderAllShapes() {
     floor.matrix.translate(0, -0.75, 0.0);
     floor.matrix.scale(10, 0.01, 10);
     floor.matrix.translate(-0.5, 0.0, -0.5);
-    floor.renderfast();
+    floor.render();
 
-    drawMap();
+    // drawMap();
 
     var head = new Cube();
     head.color = [150/255, 150/255, 150/255, 1 ];
@@ -501,104 +470,22 @@ function renderAllShapes() {
     var duration = performance.now() - startTime;
 	  sendTextToHTML(" ms: " + Math.floor(duration) + " fps: " + Math.floor(10000/duration)/10, "numdot");
 }
-var g_map = [
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], //1
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], //2
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], //3
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], //4
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], //5
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], //6
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], //7
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], //8
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], //9
-    [0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0], //10
-    [0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0], //11
-    [0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0], //12
-    [0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0], //13
-    [0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0], //14
-    [0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0], //15
-    [0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0], //16
-    [0, 0, 0, 0, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0], //17
-    [0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0], //18
-    [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0], //19
-    [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0], //20
-    [0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0], //21
-    [0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0], //22
-    [0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0], //23
-    [0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0], //24
-    [0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0], //25
-    [0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0], //26
-    [0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0], //27
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0], //28
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], //29
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], //30
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], //31
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], //32
-];
-
-
-function drawMap() {
-    for (x = 0; x < 32; x++) {
-        for (y = 0; y < 32; y++) {
-            if (g_map[x][y] ==  1) {
-                var wall = new Cube();
-                wall.textureNum = 0;
-                wall.matrix.translate(0, -0.75, 0);
-                wall.matrix.scale(1, 3, 1);
-                wall.matrix.translate(x-16, 0, y-16);
-                wall.renderfast();
-            }
-        }
-    }
-}
 
 function sendTextToHTML(text, htmlID) {   // we take the text and its htmlID
-      var htmlElm = document.getElementById(htmlID);
-      if (!htmlElm) {
-        console.log("Failed to get " + htmlID + " from HTML");
-        return;
-      }
-      htmlElm.innerHTML = text; // send inner html to whatver the text was
+    var htmlElm = document.getElementById(htmlID);
+    if (!htmlElm) {
+      console.log("Failed to get " + htmlID + " from HTML");
+      return;
+    }
+    htmlElm.innerHTML = text; // send inner html to whatver the text was
   }
 
-function main() {
+  function main() {
       setupWebGL();
 
       connectVariablestoGLSL();
 
       addActionsforHTMLUI();
-
-      // got help from tiffany guan on mouse rotation code
-
-      var mouseX = null;
-      var mouseY = null;
-      var mouseDown = false;
-
-      canvas.onmousedown = function(ev) {
-          mouseDown = true;
-          mouseX = ev.clientX;
-          mouseY = ev.clientY;
-      };
-
-      canvas.onmouseup = function(ev) {
-          mouseDown = false;
-      };
-
-      canvas.onmousemove = function(ev) {
-          if (mouseDown) {
-          // updated values of xyz
-          var newX = ev.clientX;
-          var newY = ev.clientY;
-
-          g_camera.at.elements[0] += (newX - mouseX) * 0.5;
-          g_camera.at.elements[1] += (newY - mouseY) * 0.5;
-
-          mouseX = newX;
-          mouseY = newY;
-
-          renderAllShapes();
-          }
-      };
 
       document.onkeydown = keydown;
 
