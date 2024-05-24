@@ -176,13 +176,13 @@ function connectVariablestoGLSL() {
     }
 
     u_Sampler1 = gl.getUniformLocation(gl.program, 'u_Sampler1');
-    if (!u_Sampler0) {
+    if (!u_Sampler1) {
         console.log('Failed to get the storage location of u_Sampler1');
         return;
     }
 
     u_Sampler2 = gl.getUniformLocation(gl.program, 'u_Sampler2');
-    if (!u_Sampler0) {
+    if (!u_Sampler2) {
         console.log('Failed to get the storage location of u_Sampler2');
         return;
     }
@@ -440,15 +440,18 @@ function renderAllShapes() {
     var startTime = performance.now();
 
     var projMat = new Matrix4();
-    projMat.setPerspective(30, 1*canvas.width/canvas.height, 1, 100);
+    projMat.setPerspective(50, canvas.width / canvas.height, 1, 100);
     gl.uniformMatrix4fv(u_ProjectionMatrix, false, projMat.elements);
 
     var viewMat = new Matrix4();
-    viewMat.setLookAt(
-        g_camera.eye.elements[0], g_camera.eye.elements[1], g_camera.eye.elements[2],
-        g_camera.at.elements[0],  g_camera.at.elements[1],  g_camera.at.elements[2],
-        g_camera.up.elements[0],  g_camera.up.elements[1],  g_camera.up.elements[2]);
+    viewMat.setLookAt(g_globalX, g_globalY, g_globalZ, g_origin[0], g_origin[1], g_origin[2], 0, 1, 0);
     gl.uniformMatrix4fv(u_ViewMatrix, false, viewMat.elements);
+    // var viewMat = new Matrix4();
+    // viewMat.setLookAt(
+    //     g_camera.eye.elements[0], g_camera.eye.elements[1], g_camera.eye.elements[2],
+    //     g_camera.at.elements[0],  g_camera.at.elements[1],  g_camera.at.elements[2],
+    //     g_camera.up.elements[0],  g_camera.up.elements[1],  g_camera.up.elements[2]);
+    // gl.uniformMatrix4fv(u_ViewMatrix, false, viewMat.elements);
 
     var globalRotMat = new Matrix4().rotate(g_globalAngle, 0, 1, 0);
     globalRotMat.rotate(g_globalX,1,0,0); // x-axis
