@@ -283,7 +283,7 @@ function initTextures() {
         return false;
     }
     image3.onload = function(){ sendImagetoTexture2(image3);}
-    image3.src = 'grass.jpg';
+    image3.src = 'fence.jpg';
 
     return true;
 }
@@ -444,14 +444,14 @@ function renderAllShapes() {
     gl.uniformMatrix4fv(u_ProjectionMatrix, false, projMat.elements);
 
     var viewMat = new Matrix4();
-    viewMat.setLookAt(g_globalX, g_globalY, g_globalZ, g_origin[0], g_origin[1], g_origin[2], 0, 1, 0);
-    gl.uniformMatrix4fv(u_ViewMatrix, false, viewMat.elements);
-    // var viewMat = new Matrix4();
-    // viewMat.setLookAt(
-    //     g_camera.eye.elements[0], g_camera.eye.elements[1], g_camera.eye.elements[2],
-    //     g_camera.at.elements[0],  g_camera.at.elements[1],  g_camera.at.elements[2],
-    //     g_camera.up.elements[0],  g_camera.up.elements[1],  g_camera.up.elements[2]);
+    // viewMat.setLookAt(g_globalX, g_globalY, g_globalZ, g_origin[0], g_origin[1], g_origin[2], 0, 1, 0);
     // gl.uniformMatrix4fv(u_ViewMatrix, false, viewMat.elements);
+    // var viewMat = new Matrix4();
+    viewMat.setLookAt(
+        g_camera.eye.elements[0], g_camera.eye.elements[1], g_camera.eye.elements[2],
+        g_camera.at.elements[0],  g_camera.at.elements[1],  g_camera.at.elements[2],
+        g_camera.up.elements[0],  g_camera.up.elements[1],  g_camera.up.elements[2]);
+    gl.uniformMatrix4fv(u_ViewMatrix, false, viewMat.elements);
 
     var globalRotMat = new Matrix4().rotate(g_globalAngle, 0, 1, 0);
     globalRotMat.rotate(g_globalX,1,0,0); // x-axis
@@ -462,23 +462,22 @@ function renderAllShapes() {
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
     // Colors
-
     // Skybox
     var sky = new Cube();
     sky.color = [1.0, 0.0, 0.0, 1.0];
     sky.textureNum = 0;
     sky.matrix.scale(50, 50, 50);
     sky.matrix.translate(-0.5, -0.5, -0.5);
-    sky.renderfast();
+    sky.render();
 
     // Floor
     var floor = new Cube();
     floor.color = [1.0, 0.0, 0.0, 1.0];
     floor.textureNum = 1;
     floor.matrix.translate(0, -0.75, 0.0);
-    floor.matrix.scale(10, 0.01, 10);
+    floor.matrix.scale(35, 0.01, 35);
     floor.matrix.translate(-0.5, 0.0, -0.5);
-    floor.renderfast();
+    floor.render();
 
     drawMap();
 
@@ -545,7 +544,7 @@ function drawMap() {
         for (y = 0; y < 32; y++) {
             if (g_map[x][y] ==  1) {
                 var wall = new Cube();
-                wall.textureNum = 0;
+                wall.textureNum = 2;
                 wall.matrix.translate(0, -0.75, 0);
                 wall.matrix.scale(1, 3, 1);
                 wall.matrix.translate(x-16, 0, y-16);
@@ -563,6 +562,8 @@ function sendTextToHTML(text, htmlID) {   // we take the text and its htmlID
       }
       htmlElm.innerHTML = text; // send inner html to whatver the text was
   }
+
+
 
 function main() {
       setupWebGL();
